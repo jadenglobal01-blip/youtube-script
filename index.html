@@ -328,13 +328,11 @@ async function doSearch() {
   setStep(1);
 
   try {
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const publishedAfter = oneYearAgo.toISOString();
+
     const dur = selectedType === 'short' ? '&videoDuration=short' : selectedType === 'long' ? '&videoDuration=long' : '';
     const langParam = selectedLang === 'ko' ? '&relevanceLanguage=ko' : selectedLang === 'en' ? '&relevanceLanguage=en' : '';
 
-    const r1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(kw)}&type=video&maxResults=20&order=viewCount&publishedAfter=${publishedAfter}${dur}${langParam}&key=${ytKey}`);
+    const r1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(kw)}&type=video&maxResults=20&order=viewCount${dur}${langParam}&key=${ytKey}`);
     const d1 = await r1.json();
     if (d1.error) throw new Error(d1.error.message);
 
@@ -380,7 +378,7 @@ function renderVideos(kw, videos) {
   grid.innerHTML = '';
 
   const langLabel = selectedLang === 'ko' ? '🇰🇷 한국어' : selectedLang === 'en' ? '🇺🇸 영어' : '전체';
-  $('resultMeta').innerHTML = `<b>"${kw}"</b> · ${langLabel} · 최근 1년 · 조회수 5천+ · 상위 ${videos.length}개`;
+  $('resultMeta').innerHTML = `<b>"${kw}"</b> · ${langLabel} · 조회수 5천+ · 상위 ${videos.length}개`;
   $('videoSection').classList.remove('hidden');
 
   videos.forEach((v, i) => {
