@@ -77,6 +77,7 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
 .filter-pill.on-en { border-color: #4f46e5; color: #4f46e5; background: #eef2ff; font-weight: 700; }
 .filter-pill.on-all { border-color: #d97706; color: #d97706; background: #fffbeb; font-weight: 700; }
 .filter-pill.on-type { border-color: #4f46e5; color: #4f46e5; background: #eef2ff; font-weight: 700; }
+.filter-pill.on-period { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; font-weight: 700; }
 
 .lang-tip { font-size: 12px; padding: 7px 12px; border-radius: 6px; margin-top: 10px; display: none; }
 .lang-tip.en { background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; }
@@ -261,6 +262,12 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
       <button class="filter-pill" onclick="setType('short',this)" id="pl-short">숏폼</button>
       <button class="filter-pill" onclick="setType('both',this)" id="pl-both">둘 다</button>
     </div>
+    <div class="filter-group">
+      <span class="filter-label">📅 기간</span>
+      <button class="filter-pill on-period" onclick="setPeriod('all',this)" id="pl-period-all">전체</button>
+      <button class="filter-pill" onclick="setPeriod('3y',this)" id="pl-period-3y">최근 3년</button>
+      <button class="filter-pill" onclick="setPeriod('1y',this)" id="pl-period-1y">최근 1년</button>
+    </div>
   </div>
   <div class="lang-tip en" id="langTip" style="display:block;">💡 <b>영어 모드:</b> 해외에서 검증된 아마존 콘텐츠를 분석해서 한국 최초로 재구성할 수 있어요.</div>
   <div class="error-msg" id="searchError"></div>
@@ -383,6 +390,7 @@ let currentMode = 'keyword';
 let selectedType = 'long';
 let selectedLang = 'en';
 let selectedSort = 'related';
+let selectedPeriod = 'all';
 let selectedVideos = [];
 let analysisResults = {};
 let currentPrompt = '';
@@ -428,6 +436,11 @@ function setLang(lang, btn) {
 function setType(t, btn) {
   selectedType = t;
   ['long','short','both'].forEach(x => { $('pl-'+x).className = 'filter-pill' + (x===t ? ' on-type' : ''); });
+}
+
+function setPeriod(p, btn) {
+  selectedPeriod = p;
+  ['all','3y','1y'].forEach(x => { $('pl-period-'+x).className = 'filter-pill' + (x===p ? ' on-period' : ''); });
 }
 
 function setSort(s, btn) {
@@ -719,7 +732,18 @@ async function doSearch() {
     const dur = selectedType === 'short' ? '&videoDuration=short' : selectedType === 'long' ? '&videoDuration=long' : '';
     const langParam = selectedLang === 'ko' ? '&relevanceLanguage=ko' : selectedLang === 'en' ? '&relevanceLanguage=en' : '';
 
-    const r1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(kw)}&type=video&maxResults=20&order=${order}${dur}${langParam}&key=${ytKey}`);
+    // 기간 파라미터 계산
+    let publishedAfterParam = '';
+    if (selectedPeriod === '1y') {
+      const d = new Date(); d.setFullYear(d.getFullYear() - 1);
+      publishedAfterParam = '&publishedAfter=' + d.toISOString();
+    } else if (selectedPeriod === '3y') {
+      const d = new Date(); d.setFullYear(d.getFullYear() - 3);
+      publishedAfterParam = '&publishedAfter=' + d.toISOString();
+    }
+
+    // 1차 검색
+    const r1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(kw)}&type=video&maxResults=25&order=${order}${dur}${langParam}${publishedAfterParam}&key=${ytKey}`);
     const d1 = await r1.json();
     if (d1.error) throw new Error(d1.error.message);
 
@@ -729,7 +753,7 @@ async function doSearch() {
     const statsMap = {};
     d2.items.forEach(v => statsMap[v.id] = v.statistics);
 
-    const videos = d1.items.map(item => ({
+    let videos = d1.items.map(item => ({
       id: item.id.videoId,
       title: item.snippet.title,
       channel: item.snippet.channelTitle,
@@ -737,7 +761,34 @@ async function doSearch() {
       views: parseInt(statsMap[item.id.videoId]?.viewCount || 0),
       publishedAt: item.snippet.publishedAt,
       lang: detectLang(item.snippet.title),
-    })).filter(v => v.views >= 5000).sort((a,b) => b.views - a.views).slice(0, 12);
+    })).filter(v => v.views >= 1000).sort((a,b) => b.views - a.views).slice(0, 12);
+
+    // A: 결과 부족하면 전체 기간으로 자동 재검색 (기간 필터가 전체가 아닐 때만)
+    if (videos.length < 6 && publishedAfterParam) {
+      $('loadingMsg').textContent = '결과가 부족해 전체 기간으로 재검색 중...';
+      const r1b = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(kw)}&type=video&maxResults=25&order=${order}${dur}${langParam}&key=${ytKey}`);
+      const d1b = await r1b.json();
+      if (!d1b.error) {
+        const ids2 = d1b.items.map(i => i.id.videoId).join(',');
+        const r2b = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids2}&key=${ytKey}`);
+        const d2b = await r2b.json();
+        const statsMap2 = {};
+        d2b.items.forEach(v => statsMap2[v.id] = v.statistics);
+        const videos2 = d1b.items.map(item => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          channel: item.snippet.channelTitle,
+          thumb: item.snippet.thumbnails.medium?.url || '',
+          views: parseInt(statsMap2[item.id.videoId]?.viewCount || 0),
+          publishedAt: item.snippet.publishedAt,
+          lang: detectLang(item.snippet.title),
+        })).filter(v => v.views >= 1000).sort((a,b) => b.views - a.views).slice(0, 12);
+        if (videos2.length > videos.length) {
+          videos = videos2;
+          showError('searchError', '⚠ 선택한 기간 내 영상이 부족해서 전체 기간 결과를 표시했어요.');
+        }
+      }
+    }
 
     hideLoading();
 
@@ -760,7 +811,8 @@ function renderVideos(kw, videos) {
   const grid = $('videoGrid');
   grid.innerHTML = '';
   const langLabel = {ko:'🇰🇷 한국어', en:'🇺🇸 영어', all:'전체'}[selectedLang];
-  $('resultCount').innerHTML = `<b>"${kw}"</b> · ${langLabel} · 조회수 5천+ · 상위 ${videos.length}개 · 영상을 선택하세요 (최대 5개)`;
+  const periodLabel = {all:'전체 기간', '3y':'최근 3년', '1y':'최근 1년'}[selectedPeriod];
+  $('resultCount').innerHTML = `<b>"${kw}"</b> · ${langLabel} · ${periodLabel} · 조회수 1천+ · 상위 ${videos.length}개 · 영상을 선택하세요 (최대 5개)`;
   $('resultSection').classList.remove('hidden');
 
   videos.forEach((v, i) => {
