@@ -33,7 +33,6 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
 .api-ok { color: #16a34a; }
 .api-warn { color: #d97706; }
 
-/* 모드 탭 */
 .mode-bar { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 0 20px; display: flex; gap: 0; }
 .mode-tab { height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
 .mode-tab:hover { color: #374151; }
@@ -62,7 +61,6 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
 .search-btn { height: 40px; padding: 0 20px; border-radius: 8px; border: none; background: #4f46e5; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .search-btn:hover { background: #3730a3; }
 
-/* URL 분석 입력 */
 .url-input-wrap { display: flex; gap: 8px; align-items: flex-start; }
 .url-input { flex: 1; height: 40px; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 0 14px; font-size: 14px; color: #1a1d23; outline: none; background: #fff; transition: border-color 0.15s; }
 .url-input:focus { border-color: #dc2626; }
@@ -141,12 +139,10 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
 .video-views { font-size: 12px; font-weight: 700; color: #4f46e5; }
 .video-date { font-size: 10px; color: #c4c9d4; }
 
-/* 각본 분석 결과 */
 .section-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .section-ttl { font-size: 15px; font-weight: 700; }
 
-/* 각본 분석 카드 */
 .script-analysis-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
 .script-video-header { background: #fef2f2; border-bottom: 1px solid #fca5a5; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
 .script-thumb { width: 80px; height: 45px; object-fit: cover; border-radius: 6px; background: #e5e7eb; flex-shrink: 0; }
@@ -230,7 +226,7 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
 
 <!-- 모드 탭 -->
 <div class="mode-bar">
-  <div class="mode-tab active" id="modeTabKeyword" onclick="setMode('keyword')">🔍 키워드 검색 → 대본 생성</div>
+  <div class="mode-tab active" id="modeTabKeyword" onclick="setMode('keyword')">🔍 키워드 검색 → 각본 분석</div>
   <div class="mode-tab" id="modeTabUrl" onclick="setMode('url')">🎯 레퍼런스 영상 각본 분석 <span class="mode-badge">NEW</span></div>
 </div>
 
@@ -240,8 +236,8 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
   <div class="sub-title">▶ 유튜브 <span style="color:#dc2626;">영상</span> 모아보기</div>
   <div class="sub-desc">키워드를 입력하면 관련 영상을 조회수 기준으로 최대 12개까지 모아 보여줍니다.</div>
   <div class="sub-action-row">
-    <div class="sub-action-btn primary" onclick="generatePrompt()" id="scriptBtn" style="display:none;">✦ 클로드로 대본 만들기</div>
-    <div class="sub-action-btn outline" onclick="openClaude()" id="claudePageBtn" style="display:none;">📄 생성된 대본 페이지</div>
+    <div class="sub-action-btn primary" onclick="generatePrompt()" id="scriptBtn" style="display:none;">✦ 각본 분석 프롬프트 생성</div>
+    <div class="sub-action-btn outline" onclick="openClaude()" id="claudePageBtn" style="display:none;">📋 각본 분석 결과 보기</div>
   </div>
   <div class="search-bar">
     <input type="text" class="search-input" id="keyword" placeholder="키워드 입력 (예: amazon PPC, amazon FBA, 아마존 셀러...)" onkeydown="if(event.key==='Enter') doSearch()" />
@@ -293,9 +289,9 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
     <div class="step-line" id="sl1"></div>
     <div class="step-item"><div class="step-dot" id="sc2">2</div><div class="step-txt" id="sn2">영상 선택</div></div>
     <div class="step-line" id="sl2"></div>
-    <div class="step-item"><div class="step-dot" id="sc3">3</div><div class="step-txt" id="sn3">자막 분석</div></div>
+    <div class="step-item"><div class="step-dot" id="sc3">3</div><div class="step-txt" id="sn3">자막 추출</div></div>
     <div class="step-line" id="sl3"></div>
-    <div class="step-item"><div class="step-dot" id="sc4">4</div><div class="step-txt" id="sn4">대본 생성</div></div>
+    <div class="step-item"><div class="step-dot" id="sc4">4</div><div class="step-txt" id="sn4">각본 분석</div></div>
   </div>
 
   <!-- URL 분석 모드 스텝바 -->
@@ -324,7 +320,7 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
         <button class="result-tool-btn" onclick="doSearch()">↺ 새로고침</button>
         <button class="result-tool-btn" onclick="copyUrls()">🔗 URL 복사</button>
         <button class="result-tool-btn" onclick="exportCsv()">↓ CSV</button>
-        <button class="result-tool-btn primary hidden" id="analyzeBtn" onclick="analyzeVideos()">🔍 자막 분석</button>
+        <button class="result-tool-btn primary hidden" id="analyzeBtn" onclick="analyzeVideos()">🔍 자막 추출</button>
       </div>
     </div>
     <div class="video-grid" id="videoGrid"></div>
@@ -333,8 +329,8 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
   <!-- 키워드 모드: 분석 섹션 -->
   <div class="section-box hidden" id="analysisSection">
     <div class="section-head">
-      <div class="section-ttl" id="analysisTtl">🧠 자막 분석 중...</div>
-      <button class="btn btn-green hidden" id="generateBtn" onclick="generatePrompt()">✨ 대본 프롬프트 생성</button>
+      <div class="section-ttl" id="analysisTtl">🧠 자막 추출 중...</div>
+      <button class="btn btn-green hidden" id="generateBtn" onclick="generatePrompt()">✨ 각본 분석 프롬프트 생성</button>
     </div>
     <div id="analysisList"></div>
   </div>
@@ -345,7 +341,7 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
       <div class="section-ttl">📋 Claude 프로젝트에 붙여넣기</div>
       <button class="btn btn-ghost" onclick="resetAll()">← 처음부터</button>
     </div>
-    <p style="font-size:13px; color:#6b7280; margin-bottom:12px;"><b style="color:#1a1d23;">Claude 프로젝트</b>를 열고 Ctrl+V로 붙여넣으면 제이든글로벌 스타일 대본이 생성됩니다!</p>
+    <p style="font-size:13px; color:#6b7280; margin-bottom:12px;"><b style="color:#1a1d23;">Claude 프로젝트</b>를 열고 Ctrl+V로 붙여넣으면 각본 구조 분석 + 제이든글로벌 기획 템플릿이 생성됩니다!</p>
     <div class="prompt-box" id="promptBox"></div>
     <div class="prompt-actions">
       <button class="claude-btn" onclick="openClaude()">🤖 Claude 프로젝트 열기 →</button>
@@ -376,7 +372,7 @@ body { font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, system-u
   <div class="empty-box" id="emptyBox">
     <div class="empty-icon" id="emptyIcon">🎬</div>
     <div class="empty-title" id="emptyTitle">키워드를 입력하고 검색해보세요</div>
-    <div class="empty-desc" id="emptyDesc">영어 키워드로 해외 인기 아마존 영상을 분석하고<br>제이든글로벌 스타일 대본을 자동으로 만들어드립니다</div>
+    <div class="empty-desc" id="emptyDesc">영어 키워드로 해외 인기 아마존 영상을 분석하고<br>제이든글로벌 스타일 각본 구조를 자동으로 추출해드립니다</div>
   </div>
 
 </div>
@@ -404,7 +400,6 @@ function setMode(mode) {
   $('stepBarKeyword').classList.toggle('hidden', mode !== 'keyword');
   $('stepBarUrl').classList.toggle('hidden', mode !== 'url');
 
-  // 각 모드의 결과 섹션들
   ['resultSection','analysisSection','promptSection'].forEach(id => $(id).classList.add('hidden'));
   ['urlAnalysisSection','urlPromptSection'].forEach(id => $(id).classList.add('hidden'));
 
@@ -416,7 +411,7 @@ function setMode(mode) {
   } else {
     $('emptyIcon').textContent = '🎬';
     $('emptyTitle').textContent = '키워드를 입력하고 검색해보세요';
-    $('emptyDesc').textContent = '영어 키워드로 해외 인기 아마존 영상을 분석하고\n제이든글로벌 스타일 대본을 자동으로 만들어드립니다';
+    $('emptyDesc').textContent = '영어 키워드로 해외 인기 아마존 영상을 분석하고\n제이든글로벌 스타일 각본 구조를 자동으로 추출해드립니다';
   }
 }
 
@@ -521,7 +516,6 @@ async function analyzeUrl() {
   setUrlStep(2);
 
   try {
-    // 영상 정보 가져오기
     const ytKey = $('ytKey').value.trim();
     let videoInfo = { title: '레퍼런스 영상', channel: '', views: 0, thumb: '' };
 
@@ -574,7 +568,6 @@ function renderUrlAnalysis(videoInfo, transcript, videoId, url) {
   const transcriptLen = transcript.length;
   const preview = transcript.slice(0, 8000);
 
-  // 각본 구조 분석 프롬프트 생성
   currentUrlPrompt = `아래는 유튜브 레퍼런스 영상의 전체 자막입니다.
 
 ━━━━━━━━━━━━━━━━━━━━━
@@ -818,7 +811,7 @@ async function analyzeVideos() {
   if (!supaKey) { $('apiPanel').classList.add('open'); return showError('searchError', 'Supadata API 키를 입력해주세요.'); }
 
   $('analysisSection').classList.remove('hidden');
-  $('analysisTtl').textContent = '🧠 자막 분석 중...';
+  $('analysisTtl').textContent = '🧠 자막 추출 중...';
   $('analysisList').innerHTML = '';
   $('generateBtn').classList.add('hidden');
   $('promptSection').classList.add('hidden');
@@ -833,7 +826,7 @@ async function analyzeVideos() {
       <div class="analysis-card-head">
         <img class="a-thumb" src="${v.thumb}" alt="" />
         <div class="a-title">${v.title}</div>
-        <span class="a-status loading" id="st-${v.id}">분석 중...</span>
+        <span class="a-status loading" id="st-${v.id}">추출 중...</span>
       </div>
       <div class="a-body" id="ac-${v.id}"></div>
     `;
@@ -863,7 +856,7 @@ async function analyzeVideos() {
     }
     doneCount++;
     if (doneCount === selectedVideos.length) {
-      $('analysisTtl').textContent = '✅ 자막 분석 완료';
+      $('analysisTtl').textContent = '✅ 자막 추출 완료';
       $('generateBtn').classList.remove('hidden');
     }
   }
