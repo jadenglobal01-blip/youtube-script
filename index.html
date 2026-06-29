@@ -441,6 +441,10 @@ function setType(t, btn) {
 function setPeriod(p, btn) {
   selectedPeriod = p;
   ['all','3y','1y'].forEach(x => { $('pl-period-'+x).className = 'filter-pill' + (x===p ? ' on-period' : ''); });
+  // 이미 검색 결과가 있으면 자동 재검색
+  if ($('keyword').value.trim() && !$('resultSection').classList.contains('hidden')) {
+    doSearch();
+  }
 }
 
 function setSort(s, btn) {
